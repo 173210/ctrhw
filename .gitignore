@@ -1,0 +1,7 @@
+# Compiled Object files
+*.o
+*.elf
+
+ctrhw.bin
+kfs.bin
+Launcher.dat

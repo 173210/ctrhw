@@ -21,7 +21,7 @@ $(TARGET).bin: $(TARGET).elf
 	$(OC) -O binary $< -S $@
 
 $(TARGET).elf: $(OBJS)
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) $(LDFLAGS) $^ ./libgcc.a -o $@
 
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).bin kfs.bin Launcher.dat

@@ -18,56 +18,71 @@
 
 #include "fnt.h"
 
-
 #define TOP_HEIGHT 240
 #define TOP_WIDTH 400
-#define TOP_LEFT_FRAME1 (void *)0xF0184E60
-#define TOP_LEFT_FRAME2 (void *)0xF01CB370
-
 
 int cur_x = 0;
 int cur_y = TOP_HEIGHT;
 
 void _puts(const char *s)
 {
-	int fnt_x, fnt_y;
-	const char *cur;
-	char *cur_fbuf1;
-	char *cur_fbuf2;
+	struct px {
+		char b;
+		char g;
+		char r;
+	};
 
-	for (cur = s; *cur; cur++) {
-		if (*cur == '\n') {
-			cur_x = 0;
-			cur_y -= FNT_HEIGHT;
-			if (cur_y < 0)
-				cur_y = TOP_HEIGHT;
+	struct px (* top_frames[])[TOP_HEIGHT] = {(void *)0xF0184E60, (void *)0xF01CB370};
+	struct px cur_px;
+	int i, x, y, fnt_x, fnt_y;
+	const char *cur_char = s;
 
-			continue;
-		}
-		if (cur_x + FNT_WIDTH > TOP_WIDTH) {
-			cur_x = 0;
-			cur_y -= FNT_HEIGHT;
-			if (cur_y < 0)
-				cur_y = TOP_HEIGHT;
-		}
-
-		for (fnt_y = 0; fnt_y < FNT_HEIGHT; fnt_y++)
-			for (fnt_x = 0; fnt_x < FNT_WIDTH; fnt_x++) {
-				cur_fbuf1 = (char *)(TOP_LEFT_FRAME1 + ((cur_x + fnt_x) * TOP_HEIGHT + (cur_y - fnt_y)) * 3);
-				cur_fbuf2 = (char *)(TOP_LEFT_FRAME2 + ((cur_x + fnt_x) * TOP_HEIGHT + (cur_y - fnt_y)) * 3);
-
-				if ((0x80 >> fnt_x) & fnt[*cur][fnt_y]) {
-					*cur_fbuf1 = *cur_fbuf2 = 255;			// blue
-					*(cur_fbuf1 + 1) = *(cur_fbuf2 + 1) = 255;	// green
-					*(cur_fbuf1 + 2) = *(cur_fbuf2 + 2) = 255;	// red
-				} else {
-					*cur_fbuf1 = *cur_fbuf2 = 0;			// blue
-					*(cur_fbuf1 + 1) = *(cur_fbuf2 + 1) = 0;	// green
-					*(cur_fbuf1 + 2) = *(cur_fbuf2 + 2) = 0;	// red
+	while (1) {
+		switch (*cur_char) {
+			case '\0':
+				return;
+			case '\n':
+				cur_x = 0;
+				cur_y -= FNT_HEIGHT;
+				if (cur_y < 0)
+					cur_y = TOP_HEIGHT;
+			case '\r':
+				break;
+			default:
+				if (cur_x + FNT_WIDTH > TOP_WIDTH) {
+					cur_x = 0;
+					cur_y -= FNT_HEIGHT;
+					if (cur_y < 0)
+						cur_y = TOP_HEIGHT;
 				}
-			}
 
-		cur_x += FNT_WIDTH;
+				for (fnt_y = 0; fnt_y < FNT_HEIGHT; fnt_y++) {
+					y = cur_y - fnt_y;
+					for (fnt_x = 0; fnt_x < FNT_WIDTH; fnt_x++) {
+						x = cur_x + fnt_x;
+
+						if ((0x80 >> fnt_x) & fnt[*cur_char][fnt_y]) {
+							cur_px.r = 255;
+							cur_px.g = 255;
+							cur_px.b = 255;
+						} else {
+							cur_px.r = 0;
+							cur_px.g = 0;
+							cur_px.b = 0;
+						}
+
+						for (i = 0; i < sizeof(top_frames) / sizeof(void *); i++) {
+							top_frames[i][x][y].r = cur_px.r;
+							top_frames[i][x][y].g = cur_px.g;
+							top_frames[i][x][y].b = cur_px.b;
+						}
+					}
+				}
+
+				cur_x += FNT_WIDTH;
+		}
+
+		cur_char++;
 	}
 
 }

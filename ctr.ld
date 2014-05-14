@@ -11,9 +11,5 @@ SECTIONS
   .rodata     : { *(.rodata) }
   .data       : { *(.data) }
   .bss        : { *(.bss) }
-  . = ALIGN(8);
-  stack_start = .;
-  . += 0x400;
-  stack_top = .;
-  . = ALIGN(8);
+  . = ALIGN(4);
 }

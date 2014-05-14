@@ -33,7 +33,9 @@ void _puts(const char *s)
 	};
 
 	struct px (* top_frames[])[TOP_HEIGHT] = {(void *)0xF0184E60, (void *)0xF01CB370};
-	struct px cur_px;
+	struct px *cur_px;
+	struct px bg_px = {0, 0, 0};
+	struct px fnt_px = {255, 255, 255};
 	int i, x, y, fnt_x, fnt_y;
 	const char *cur_char = s;
 
@@ -60,21 +62,12 @@ void _puts(const char *s)
 					y = cur_y - fnt_y;
 					for (fnt_x = 0; fnt_x < FNT_WIDTH; fnt_x++) {
 						x = cur_x + fnt_x;
-
-						if ((0x80 >> fnt_x) & fnt[*cur_char][fnt_y]) {
-							cur_px.r = 255;
-							cur_px.g = 255;
-							cur_px.b = 255;
-						} else {
-							cur_px.r = 0;
-							cur_px.g = 0;
-							cur_px.b = 0;
-						}
+						cur_px = (0x80 >> fnt_x) & fnt[*cur_char][fnt_y] ? &fnt_px : &bg_px;
 
 						for (i = 0; i < sizeof(top_frames) / sizeof(void *); i++) {
-							top_frames[i][x][y].r = cur_px.r;
-							top_frames[i][x][y].g = cur_px.g;
-							top_frames[i][x][y].b = cur_px.b;
+							top_frames[i][x][y].r = cur_px->r;
+							top_frames[i][x][y].g = cur_px->g;
+							top_frames[i][x][y].b = cur_px->b;
 						}
 					}
 				}
@@ -101,8 +94,8 @@ char *itoa(int val, char *buf, int base)
 			val = -val;
 
 		do {
-			quot = val / base;
-			rem = val % base;
+			quot = (unsigned)val / base;
+			rem = (unsigned)val % base;
 			*buf++ = digits[rem];
 		} while ((val = quot));
 

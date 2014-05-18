@@ -37,32 +37,38 @@ void _puts(const char *s)
 	struct px bg_px = {0, 0, 0};
 	struct px fnt_px = {255, 255, 255};
 	int i, x, y, fnt_x, fnt_y;
-	const char *cur_char = s;
 
 	while (1) {
-		switch (*cur_char) {
+		switch (*s) {
 			case '\0':
 				return;
+			case '\b':
+				cur_x -= FNT_WIDTH;
+				break;
+			case '\t':
+				cur_x += FNT_WIDTH * 4;
+				break;
 			case '\n':
+crlf:
 				cur_x = 0;
+			case '\v':
 				cur_y -= FNT_HEIGHT;
 				if (cur_y < 0)
 					cur_y = TOP_HEIGHT;
 			case '\r':
 				break;
+			case '\x7F':
+				s++;
+				break;
 			default:
-				if (cur_x + FNT_WIDTH > TOP_WIDTH) {
-					cur_x = 0;
-					cur_y -= FNT_HEIGHT;
-					if (cur_y < 0)
-						cur_y = TOP_HEIGHT;
-				}
+				if (cur_x + FNT_WIDTH > TOP_WIDTH)
+					goto crlf;
 
 				for (fnt_y = 0; fnt_y < FNT_HEIGHT; fnt_y++) {
 					y = cur_y - fnt_y;
 					for (fnt_x = 0; fnt_x < FNT_WIDTH; fnt_x++) {
 						x = cur_x + fnt_x;
-						cur_px = (0x80 >> fnt_x) & fnt[*cur_char][fnt_y] ? &fnt_px : &bg_px;
+						cur_px = (0x80 >> fnt_x) & fnt[*s][fnt_y] ? &fnt_px : &bg_px;
 
 						for (i = 0; i < sizeof(top_frames) / sizeof(void *); i++) {
 							top_frames[i][x][y].r = cur_px->r;
@@ -75,22 +81,22 @@ void _puts(const char *s)
 				cur_x += FNT_WIDTH;
 		}
 
-		cur_char++;
+		s++;
 	}
 
 }
 
 char *itoa(int val, char *buf, int base)
 {
-	static const char digits [] = "0123456789ABCDEF";
+	static const char digits [] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	char *start = buf;
 	char *tmp_buf = buf;
 	char tmp;
 	int sign = 0;
 	int quot, rem;
 
-	if (base >= 2 && base <= 16) {
-		if (base == 10 && (sign = val) <0)
+	if (base >= 2 && base <= 36) {
+		if (base == 10 && (sign = val) < 0)
 			val = -val;
 
 		do {

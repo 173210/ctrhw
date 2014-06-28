@@ -49,7 +49,6 @@ void _puts(const char *s)
 				cur_x += FNT_WIDTH * 4;
 				break;
 			case '\n':
-crlf:
 				cur_x = 0;
 			case '\v':
 				cur_y -= FNT_HEIGHT;
@@ -61,8 +60,12 @@ crlf:
 				s++;
 				break;
 			default:
-				if (cur_x + FNT_WIDTH > TOP_WIDTH)
-					goto crlf;
+				if (cur_x + FNT_WIDTH > TOP_WIDTH) {
+					cur_x = 0;
+					cur_y -= FNT_HEIGHT;
+					if (cur_y < 0)
+						cur_y = TOP_HEIGHT;
+				}
 
 				for (fnt_y = 0; fnt_y < FNT_HEIGHT; fnt_y++) {
 					y = cur_y - fnt_y;

@@ -4,7 +4,7 @@ CC = arm-none-eabi-gcc
 LD = arm-none-eabi-ld
 OC = arm-none-eabi-objcopy
 
-CFLAGS = -g -mcpu=mpcore -march=armv6k -mlittle-endian -O2
+CFLAGS = -g -mcpu=mpcore -march=armv5te -mcpu=arm946e-s -mlittle-endian -O2
 LDFLAGS = -nostdlib -T ctr.ld
 
 OBJS = main.o fnt.o

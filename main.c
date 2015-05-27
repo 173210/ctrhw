@@ -32,10 +32,10 @@ void _puts(const char *s)
 		char r;
 	};
 
-	struct px (* top_frames[])[TOP_HEIGHT] = {(void *)0xF0184E60, (void *)0xF01CB370};
-	struct px *cur_px;
-	struct px bg_px = {0, 0, 0};
-	struct px fnt_px = {255, 255, 255};
+	struct px (* const top_frames[])[TOP_HEIGHT] = {(void *)0xF0184E60, (void *)0xF01CB370};
+	static const struct px bg_px = {0, 0, 0};
+	static const struct px fnt_px = {255, 255, 255};
+	const struct px *cur_px;
 	int i, x, y, fnt_x, fnt_y;
 
 	while (1) {
